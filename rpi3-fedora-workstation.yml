@@ -40,15 +40,52 @@
         dev: '/dev/mmcblk0p3'
         resizefs: yes
 
+    - name: Update GPU memory configuration block in /boot/efi/config.txt
+      blockinfile:
+        path: /boot/efi/config.txt
+        insertafter: "gpu_mem=32"
+        block: |
+          #gpu_mem_256=112
+          #gpu_mem_512=368
+          #gpu_mem_1024=448
+          cma_lwm=16
+          cma_hwm=32
+          cma_offline_start=16
+
+    - name: Test if dynamic GPU memory allocation is activated
+      command: grep "coherent_pool=6M smsc95xx.turbo_mode=N" /boot/grub/grub.conf
+      register: dynamic_gpu
+      ignore_errors: True
+
+    - debug:
+        var: dynamic_gpu
+
+    - name: Ensure dynamic GPU memory allocation is activated
+      lineinfile:
+        path: /boot/grub/grub.conf
+        regexp: '^( *)kernel (.*)$'
+        line: '\1kernel \2 coherent_pool=6M smsc95xx.turbo_mode=N'
+        backrefs: yes
+        firstmatch: yes
+      when: dynamic_gpu is failed
+
     - name: Install RPMfusion repositories
       shell: rpm -q rpmfusion-nonfree-release || dnf -y install https://download1.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm https://download1.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm
+
+    - name: Remove packages
+      package:
+        name:
+          - sylpheed
+        state: absent
 
     - name: Install packages
       package:
         name:
           - vim
           - screen
-          - chromium-freeworld
+            #- chromium-freeworld
+          - firefox
+          - claws-mail
           - libreoffice
           - cheese
           - kamoso
