@@ -1,4 +1,4 @@
 #!/bin/sh
 
 dnf install -y ansible
-ansible-playbook local.yml
+ansible-playbook rpi3-fedora-workstation.yml
