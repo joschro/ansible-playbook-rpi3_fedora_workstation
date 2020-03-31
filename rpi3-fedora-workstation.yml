@@ -92,5 +92,10 @@
           - fswebcam
           - camorama
           - guvcview
+          - claws-mail-plugins-pdf-viewer
+          - xpdf
+          - qpdfview
+          - falkon-pdfreader
+          - cups-pdf
         state: present
 
